@@ -63,6 +63,11 @@ func TaskMTimeOutOption(timeOut time.Duration) TaskAttrOption {
 		t.TimeOut = timeOut
 	}
 }
+func TaskMAsyncOption(async bool) TaskAttrOption {
+	return func(t *TaskAttr) {
+		t.Task.Async = async
+	}
+}
 func (t *TaskManager) SetLogger(logger func(string, LEVEL, interface{})) {
 	t.Logger = logger
 }
@@ -87,6 +92,11 @@ func (t *TaskManager) Stop() {
 		t.Logger(Manager, INFO, taskName+` stop`)
 		go t.Stopfunc(taskName)
 	}
+}
+
+func (t *TaskManager) StartOneTask(taskName string) {
+	t.Logger(Manager, INFO, taskName+` start`)
+	go t.Tasks[taskName].Task.Run()
 }
 
 func (t *TaskManager) StopOneTask(taskName string) {

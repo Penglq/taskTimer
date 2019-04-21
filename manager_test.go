@@ -42,15 +42,27 @@ func TestStopOneTask(t *testing.T) {
 		fmt.Println("test1 do something")
 	}, TaskMTimeOutOption(time.Second*10))
 
-	go func() {
-		time.Sleep(time.Second * 3)
-		taskM.StopOneTask("test1")
-	}()
-
 	taskM.Start()
 	go func() {
 		time.Sleep(5 * time.Second)
+		taskM.StopOneTask("test1")
+}()
+	taskM.Wait()
+}
 
-	}()
+func TestAsync(t *testing.T)  {
+	taskM := NewTaskManager(TaskManagerLoggerOption(func(name string, level LEVEL, i interface{}) {
+		log.Println(level, i, "my log")
+	}))
+	taskM.AddTask("test", "*/2 * * * * *", func() {
+		fmt.Println("test do something")
+		time.Sleep(time.Second * 5)
+	}, TaskMAsyncOption(true))
+
+	taskM.Start()
+	//go func() {
+	//	time.Sleep(time.Second * 3)
+	//	taskM.StopOneTask("test1")
+	//}()
 	taskM.Wait()
 }

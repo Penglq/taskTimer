@@ -44,11 +44,11 @@ func TaskLoggerOption(logger func(string, LEVEL, interface{})) TaskOption {
 	}
 }
 
-func TaskAsyncOption(async bool) TaskOption {
-	return func(t *Task) {
-		t.Async = async
-	}
-}
+//func TaskAsyncOption(async bool) TaskOption {
+//	return func(t *Task) {
+//		t.Async = async
+//	}
+//}
 
 func (t *Task) SetTaskDesc(desc string) {
 	t.TaskRule = desc
@@ -62,7 +62,6 @@ func (t *Task) Run() {
 	for {
 		select {
 		case <-t.Timer.C:
-			t.Timer.Reset(time.Until(t.NextRunTime()))
 			t.do()
 		case <-t.StopCH:
 			t.StopCH <- struct{}{} // 给外部发信号
@@ -94,9 +93,11 @@ func (t *Task) SetLogger(logger func(string, LEVEL, interface{})) {
 
 func (t *Task) do() {
 	if t.Async {
+		t.Timer.Reset(time.Until(t.NextRunTime()))
 		go t.taskMiddleware(t.TaskFunc)()
 	} else {
 		t.taskMiddleware(t.TaskFunc)()
+		t.Timer.Reset(time.Until(t.NextRunTime()))
 	}
 }
 
@@ -110,9 +111,9 @@ func (t *Task) recover() {
 
 func (t *Task) taskMiddleware(f func()) func() {
 	return func() {
-		defer func(TN time.Time) {
-			t.TaskLog(t.Name, INFO, time.Since(TN))
-		}(time.Now())
+		//defer func(TN time.Time) {
+		//	t.TaskLog(t.Name, INFO, time.Since(TN))
+		//}(time.Now())
 		f()
 	}
 }
